@@ -34,7 +34,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.MountableFile;
 
 import static com.playtika.test.common.utils.ContainerUtils.containerLogsConsumer;
 import static com.playtika.test.postgresql.PostgreSQLProperties.BEAN_NAME_EMBEDDED_POSTGRESQL;
@@ -68,9 +70,11 @@ public class EmbeddedPostgreSQLBootstrapConfiguration {
                 .withCommand("postgres")
                 .withLogConsumer(containerLogsConsumer(log))
                 .withExposedPorts(properties.port)
-                .waitingFor(postgreSQLStatusCheck);
+              	.waitingFor(postgreSQLStatusCheck);
         postgresql.start();
         registerPostgresqlEnvironment(postgresql, environment, properties);
+        MountableFile file = MountableFile.forHostPath("/usr/lib/mfpgex.so");
+        postgresql.copyFileToContainer(file, "/");
         return postgresql;
     }
 
